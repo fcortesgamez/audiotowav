@@ -7,6 +7,7 @@ import (
 	"github.com/zenwerk/go-wave"
 	"math/rand"
 	"os"
+	"os/exec"
 	"strings"
 	"time"
 )
@@ -50,6 +51,9 @@ func main() {
 
 	// Wait for a signal to either abort or stop the recording
 	awaitStopRecording(stream, ww)
+
+	// Analyze the Wave file
+	runPythonSoundAnalyzer("sound_analyzer.py", audioFileName)
 }
 
 func checkArgs() {
@@ -98,12 +102,12 @@ func startRecording(stream *portaudio.Stream, ww *wave.Writer, framesPerBuffer [
 	}
 
 	for {
+		fmt.Printf("\rRecording is live now. [%v]", ticker[rand.Intn(len(ticker)-1)])
+
 		err := stream.Read()
 		if err != nil {
 			panic(err)
 		}
-
-		fmt.Printf("\rRecording is live now. [%v]", ticker[rand.Intn(len(ticker)-1)])
 
 		// Write to the Wave file
 		_, err = ww.Write([]byte(framesPerBuffer)) // WriteSample16 for 16 bits
@@ -142,4 +146,16 @@ func awaitStopRecording(stream *portaudio.Stream, ww *wave.Writer) {
 	}
 
 	fmt.Println("\nRecording finished.")
+}
+
+func runPythonSoundAnalyzer(script, waveFileName string) {
+	c := exec.Command("python", script, waveFileName)
+
+	var out []byte
+	var err error
+	if out, err = c.Output(); err != nil {
+		panic(err)
+	}
+
+	fmt.Printf("%s", string(out))
 }
