@@ -149,7 +149,7 @@ func awaitStopRecording(stream *portaudio.Stream, ww *wave.Writer) {
 }
 
 func runPythonSoundAnalyzer(script, waveFileName string) {
-	c := exec.Command("python", script, waveFileName)
+	c := exec.Command("python3", script, waveFileName)
 
 	var out []byte
 	var err error
